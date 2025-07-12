@@ -256,6 +256,8 @@ export const Admin: React.FC = () => {
         .from('upload_history')
         .insert({
           uploaded_by: user?.id,
+          file_name: uploadFile.name,
+          position: 'append',
           proxy_count: lines.length
         });
 
