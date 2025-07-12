@@ -4,6 +4,7 @@ import { supabase, User, Proxy, UploadHistory } from '../lib/supabase';
 import { Upload, Trash2, Users, Edit2, RotateCcw, Database } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Modal from '../components/Modal';
+import UploadProgressModal from '../components/UploadProgressModal';
 import * as XLSX from 'xlsx';
 
 export const Admin: React.FC = () => {
@@ -28,6 +29,14 @@ export const Admin: React.FC = () => {
   // Proxy upload states
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({
+    isOpen: false,
+    progress: 0,
+    status: 'uploading' as 'uploading' | 'success' | 'error',
+    message: '',
+    totalProxies: 0,
+    processedProxies: 0
+  });
 
   useEffect(() => {
     if (user && (user.role === 'admin' || user.role === 'manager')) {
@@ -150,6 +159,145 @@ export const Admin: React.FC = () => {
   };
 
   const handleFileUpload = async () => {
+    if (!uploadFile) {
+      toast.error('Please select a file');
+      return;
+    }
+
+    setUploading(true);
+    setUploadProgress({
+      isOpen: true,
+      progress: 0,
+      status: 'uploading',
+      message: 'Reading file and preparing proxies...',
+      totalProxies: 0,
+      processedProxies: 0
+    });
+
+    try {
+      const fileContent = await uploadFile.text();
+      const lines = fileContent.split('\n').filter(line => line.trim());
+      
+      if (lines.length === 0) {
+        setUploadProgress(prev => ({
+          ...prev,
+          status: 'error',
+          message: 'File is empty or invalid'
+        }));
+        setTimeout(() => {
+          setUploadProgress(prev => ({ ...prev, isOpen: false }));
+        }, 3000);
+        setUploading(false);
+        return;
+      }
+
+      // Update progress with total count
+      setUploadProgress(prev => ({
+        ...prev,
+        totalProxies: lines.length,
+        progress: 10,
+        message: `Found ${lines.length} proxies. Starting upload...`
+      }));
+
+      // Simulate progress during processing
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      setUploadProgress(prev => ({
+        ...prev,
+        progress: 30,
+        message: 'Validating proxy format...'
+      }));
+
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      const insertData = lines.map(line => ({ proxy_string: line.trim() }));
+
+      setUploadProgress(prev => ({
+        ...prev,
+        progress: 50,
+        message: 'Uploading to database...'
+      }));
+
+      // Insert proxies in batches for better progress tracking
+      const batchSize = 100;
+      let processedCount = 0;
+
+      for (let i = 0; i < insertData.length; i += batchSize) {
+        const batch = insertData.slice(i, i + batchSize);
+        
+        const { error: batchError } = await supabase
+          .from('proxies')
+          .insert(batch);
+
+        if (batchError) throw batchError;
+
+        processedCount += batch.length;
+        const progressPercent = 50 + (processedCount / insertData.length) * 40; // 50% to 90%
+        
+        setUploadProgress(prev => ({
+          ...prev,
+          progress: progressPercent,
+          processedProxies: processedCount,
+          message: `Uploading... ${processedCount}/${insertData.length} proxies`
+        }));
+
+        // Small delay to show progress
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+
+      setUploadProgress(prev => ({
+        ...prev,
+        progress: 95,
+        message: 'Finalizing upload...'
+      }));
+
+      // Log upload history
+      await supabase
+        .from('upload_history')
+        .insert({
+          uploaded_by: user?.id,
+          proxy_count: lines.length
+        });
+
+      setUploadProgress(prev => ({
+        ...prev,
+        progress: 100,
+        status: 'success',
+        message: `Successfully uploaded ${lines.length} proxies!`
+      }));
+
+      // Auto close after success
+      setTimeout(() => {
+        setUploadProgress(prev => ({ ...prev, isOpen: false }));
+      }, 3000);
+
+      setUploadFile(null);
+      fetchUploadHistory();
+      
+    } catch (error: any) {
+      console.error('Error uploading file:', error);
+      
+      let errorMessage = 'Error uploading file';
+      if (error.code === '23505') {
+        errorMessage = 'Some proxies already exist in the database';
+      }
+
+      setUploadProgress(prev => ({
+        ...prev,
+        status: 'error',
+        message: errorMessage
+      }));
+
+      // Auto close after error
+      setTimeout(() => {
+        setUploadProgress(prev => ({ ...prev, isOpen: false }));
+      }, 5000);
+    }
+    setUploading(false);
+  };
+
+  // Old upload function (keeping for reference, but not used)
+  const handleFileUploadOld = async () => {
     if (!uploadFile) {
       toast.error('Please select a file');
       return;
@@ -567,6 +715,16 @@ export const Admin: React.FC = () => {
             </div>
           </form>
         </Modal>
+
+        {/* Upload Progress Modal */}
+        <UploadProgressModal
+          isOpen={uploadProgress.isOpen}
+          progress={uploadProgress.progress}
+          status={uploadProgress.status}
+          message={uploadProgress.message}
+          totalProxies={uploadProgress.totalProxies}
+          processedProxies={uploadProgress.processedProxies}
+        />
       </div>
     </div>
   );
