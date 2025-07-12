@@ -416,13 +416,6 @@ export const Admin: React.FC = () => {
                   >
                     {uploading ? 'Uploading...' : 'Upload Proxies'}
                   </button>
-                  <button
-                    onClick={handleClearAllProxies}
-                    className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
-                  >
-                    <Trash2 size={16} className="inline mr-2" />
-                    Clear All Proxies
-                  </button>
                 </div>
               </div>
             </div>
