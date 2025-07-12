@@ -220,46 +220,59 @@ export const Status: React.FC = () => {
         {/* System Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="flex items-center">
-              <div className="bg-blue-100 rounded-full p-3">
-                <Users className="h-6 w-6 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Users</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
-                <p className="text-xs text-gray-500">
-                  {stats.activeUsers} active
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="flex items-center">
-              <div className="bg-green-100 rounded-full p-3">
-                <Database className="h-6 w-6 text-green-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Proxies</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalProxies}</p>
-                <p className="text-xs text-gray-500">
-                  {stats.totalProxies - stats.usedProxies} available
-                </p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="bg-blue-100 rounded-full p-3">
+                  <Users className="h-6 w-6 text-blue-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Users</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
+                  <p className="text-xs text-gray-500">
+                    {stats.activeUsers} active
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
           <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="flex items-center">
-              <div className="bg-purple-100 rounded-full p-3">
-                <Activity className="h-6 w-6 text-purple-600" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="bg-green-100 rounded-full p-3">
+                  <Database className="h-6 w-6 text-green-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Proxies</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.totalProxies}</p>
+                  <p className="text-xs text-gray-500">
+                    {stats.totalProxies - stats.usedProxies} available
+                  </p>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Today's Usage</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.todayUsage}</p>
-                <p className="text-xs text-gray-500">
-                  {stats.weeklyUsage} this week
-                </p>
+              <button
+                onClick={handleClearAllProxies}
+                className="bg-red-600 text-white px-3 py-2 rounded-md hover:bg-red-700 transition-colors flex items-center space-x-1"
+              >
+                <Trash2 size={14} />
+                <span className="text-xs">Delete All</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="bg-purple-100 rounded-full p-3">
+                  <Activity className="h-6 w-6 text-purple-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Today's Usage</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.todayUsage}</p>
+                  <p className="text-xs text-gray-500">
+                    {stats.weeklyUsage} this week
+                  </p>
+                </div>
               </div>
             </div>
           </div>

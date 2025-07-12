@@ -257,8 +257,8 @@ export const Admin: React.FC = () => {
         .insert({
           uploaded_by: user?.id,
           file_name: uploadFile.name,
-          position: 'append',
-          proxy_count: lines.length
+          proxy_count: lines.length,
+          position: 'append'
         });
 
       setUploadProgress(prev => ({
@@ -275,6 +275,11 @@ export const Admin: React.FC = () => {
 
       setUploadFile(null);
       fetchUploadHistory();
+      
+      // Refresh upload history after successful upload
+      setTimeout(() => {
+        fetchUploadHistory();
+      }, 1000);
       
     } catch (error: any) {
       console.error('Error uploading file:', error);
@@ -543,6 +548,23 @@ export const Admin: React.FC = () => {
         {/* Proxies Tab */}
         {activeTab === 'proxies' && (
           <div className="space-y-6">
+            {/* Proxy Statistics */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Proxy Statistics</h2>
+                  <p className="text-sm text-gray-600 mt-1">Current proxy database status</p>
+                </div>
+                <button
+                  onClick={handleClearAllProxies}
+                  className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors flex items-center space-x-2"
+                >
+                  <Trash2 size={16} />
+                  <span>Delete All IPs</span>
+                </button>
+              </div>
+            </div>
+
             {/* Upload Section */}
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Upload Proxies</h2>
